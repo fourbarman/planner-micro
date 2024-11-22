@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.fourbarman.planner.micro.plannerentity.entity.Category;
+import ru.fourbarman.planner.micro.plannertodo.feign.UserFeignClient;
 import ru.fourbarman.planner.micro.plannertodo.resttemplate.UserRestBuilder;
 import ru.fourbarman.planner.micro.plannertodo.search.CategorySearchValues;
 import ru.fourbarman.planner.micro.plannertodo.service.CategoryService;
@@ -30,12 +31,14 @@ public class CategoryController {
     private final CategoryService categoryService;
     private final UserRestBuilder userRestBuilder;
     private final UserWebClientBuilder userWebClientBuilder;
+    private final UserFeignClient userFeignClient;
 
     // автоматическое внедрение экземпляра класса через конструктор
     // не используем @Autowired ля переменной класса, т.к. "Field injection is not recommended "
-    public CategoryController(CategoryService categoryService, UserWebClientBuilder userWebClientBuilder) {
+    public CategoryController(CategoryService categoryService, UserWebClientBuilder userWebClientBuilder, UserFeignClient userFeignClient) {
         this.categoryService = categoryService;
         this.userWebClientBuilder = userWebClientBuilder;
+        this.userFeignClient = userFeignClient;
         this.userRestBuilder = new UserRestBuilder();
     }
 
@@ -88,8 +91,13 @@ public class CategoryController {
 //        }
 
         // используем асинхронный WebClient => Результат не будет ожилаться и выполнение продолжится!
-        userWebClientBuilder.userExistsAsync(category.getUserId())
-                .subscribe(user -> System.out.println("user = " + user));
+//        userWebClientBuilder.userExistsAsync(category.getUserId())
+//                .subscribe(user -> System.out.println("user = " + user));
+
+        //используем feign для проверки что User существует в другом микросервисе (planner-user)
+        if (userFeignClient.findUserById(category.getUserId()) != null) {
+            return ResponseEntity.ok(categoryService.add(category));
+        }
 
         // пользователя не существует => ошибка
         return new ResponseEntity("user id = " + category.getUserId() + " not found", HttpStatus.NOT_ACCEPTABLE);
