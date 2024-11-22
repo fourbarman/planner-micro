@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.fourbarman.planner.micro.plannerentity.entity.Category;
+import ru.fourbarman.planner.micro.plannerentity.entity.User;
 import ru.fourbarman.planner.micro.plannertodo.feign.UserFeignClient;
 import ru.fourbarman.planner.micro.plannertodo.resttemplate.UserRestBuilder;
 import ru.fourbarman.planner.micro.plannertodo.search.CategorySearchValues;
@@ -95,6 +96,12 @@ public class CategoryController {
 //                .subscribe(user -> System.out.println("user = " + user));
 
         //используем feign для проверки что User существует в другом микросервисе (planner-user)
+        ResponseEntity<User> response = userFeignClient.findUserById(category.getUserId());
+
+        if (response == null) {
+            return new ResponseEntity("User service not available", HttpStatus.NOT_FOUND);
+        }
+
         if (userFeignClient.findUserById(category.getUserId()) != null) {
             return ResponseEntity.ok(categoryService.add(category));
         }
