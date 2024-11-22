@@ -2,7 +2,7 @@ package ru.fourbarman.planner.micro.plannertodo.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.fourbarman.planner.micro.plannertodo.entity.Priority;
+import ru.fourbarman.planner.micro.plannerentity.entity.Priority;
 import ru.fourbarman.planner.micro.plannertodo.repository.PriorityRepository;
 
 import java.util.List;

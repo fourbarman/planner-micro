@@ -8,7 +8,7 @@ import org.springframework.expression.ParseException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.fourbarman.planner.micro.plannertodo.entity.Task;
+import ru.fourbarman.planner.micro.plannerentity.entity.Task;
 import ru.fourbarman.planner.micro.plannertodo.search.TaskSearchValues;
 import ru.fourbarman.planner.micro.plannertodo.service.TaskService;
 

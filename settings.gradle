@@ -4,4 +4,6 @@ include 'planner-config'
 include 'planner-gateway'
 include 'planner-server'
 include 'planner-todo'
+include 'planner-users'
+include 'planner-entity'
 

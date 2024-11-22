@@ -1,7 +1,7 @@
 package ru.fourbarman.planner.micro.plannertodo.service;
 
 import org.springframework.stereotype.Service;
-import ru.fourbarman.planner.micro.plannertodo.entity.Category;
+import ru.fourbarman.planner.micro.plannerentity.entity.Category;
 import ru.fourbarman.planner.micro.plannertodo.repository.CategoryRepository;
 
 import javax.transaction.Transactional;

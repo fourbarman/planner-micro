@@ -1,7 +1,7 @@
 package ru.fourbarman.planner.micro.plannertodo.repository;
 
 import org.springframework.data.repository.CrudRepository;
-import ru.fourbarman.planner.micro.plannertodo.entity.Stat;
+import ru.fourbarman.planner.micro.plannerentity.entity.Stat;
 
 public interface StatRepository extends CrudRepository<Stat, Long> {
 

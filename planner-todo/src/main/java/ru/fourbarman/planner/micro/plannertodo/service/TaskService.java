@@ -4,7 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.fourbarman.planner.micro.plannertodo.entity.Task;
+import ru.fourbarman.planner.micro.plannerentity.entity.Task;
 import ru.fourbarman.planner.micro.plannertodo.repository.TaskRepository;
 
 import java.util.Date;

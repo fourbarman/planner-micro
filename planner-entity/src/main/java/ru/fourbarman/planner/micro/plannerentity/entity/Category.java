@@ -1,4 +1,4 @@
-package ru.fourbarman.planner.micro.plannertodo.entity;
+package ru.fourbarman.planner.micro.plannerentity.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

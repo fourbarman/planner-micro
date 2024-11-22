@@ -4,7 +4,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.fourbarman.planner.micro.plannertodo.entity.Category;
+import ru.fourbarman.planner.micro.plannerentity.entity.Category;
 import ru.fourbarman.planner.micro.plannertodo.search.CategorySearchValues;
 import ru.fourbarman.planner.micro.plannertodo.service.CategoryService;
 
