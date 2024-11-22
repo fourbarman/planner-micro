@@ -70,7 +70,7 @@ public class CategoryController {
             return new ResponseEntity("Missed param: title must be not null", HttpStatus.NOT_ACCEPTABLE);
         }
         //вызываем микросервис из другого модуля
-        // если пользователь существует, то создаем Category
+        // если пользователь существует, то создаем запись
         if(userRestBuilder.userExists(category.getUserId())) {
             return ResponseEntity.ok(categoryService.add(category));
         }

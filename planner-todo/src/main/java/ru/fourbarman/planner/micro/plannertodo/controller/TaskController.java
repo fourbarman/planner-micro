@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.fourbarman.planner.micro.plannerentity.entity.Task;
+import ru.fourbarman.planner.micro.plannertodo.resttemplate.UserRestBuilder;
 import ru.fourbarman.planner.micro.plannertodo.search.TaskSearchValues;
 import ru.fourbarman.planner.micro.plannertodo.service.TaskService;
 
@@ -21,9 +22,11 @@ import java.util.List;
 public class TaskController {
     public static final String ID_COLUMN = "id";
     private final TaskService taskService;
+    private final UserRestBuilder userRestBuilder;
 
-    public TaskController(TaskService taskService) {
+    public TaskController(TaskService taskService, UserRestBuilder userRestBuilder) {
         this.taskService = taskService;
+        this.userRestBuilder = userRestBuilder;
     }
 
     @PostMapping("/all")
@@ -41,7 +44,13 @@ public class TaskController {
             return new ResponseEntity("Missed param: title", HttpStatus.NOT_ACCEPTABLE);
         }
 
-        return ResponseEntity.ok(taskService.add(task));
+        //вызываем микросервис из другого модуля
+        // если пользователь существует, то создаем запись
+        if(userRestBuilder.userExists(task.getUserId())) {
+            return ResponseEntity.ok(taskService.add(task));
+        }
+        // пользователя не существует => ошибка
+        return new ResponseEntity("user id = " + task.getUserId() + " not found", HttpStatus.NOT_ACCEPTABLE);
     }
 
     @PutMapping("/update")

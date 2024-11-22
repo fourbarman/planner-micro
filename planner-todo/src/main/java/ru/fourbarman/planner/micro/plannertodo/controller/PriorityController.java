@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.fourbarman.planner.micro.plannerentity.entity.Priority;
+import ru.fourbarman.planner.micro.plannertodo.resttemplate.UserRestBuilder;
 import ru.fourbarman.planner.micro.plannertodo.search.PrioritySearchValues;
 import ru.fourbarman.planner.micro.plannertodo.service.PriorityService;
 
@@ -15,9 +16,11 @@ import java.util.NoSuchElementException;
 @RequestMapping("/priority")
 public class PriorityController {
     private final PriorityService priorityService;
+    private final UserRestBuilder userRestBuilder;
 
-    public PriorityController(PriorityService priorityService) {
+    public PriorityController(PriorityService priorityService, UserRestBuilder userRestBuilder) {
         this.priorityService = priorityService;
+        this.userRestBuilder = userRestBuilder;
     }
 
     @PostMapping("/all")
@@ -39,7 +42,14 @@ public class PriorityController {
         if (priority.getColor() == null || priority.getColor().trim().isEmpty()) {
             return new ResponseEntity("Missed param: color", HttpStatus.NOT_ACCEPTABLE);
         }
-        return ResponseEntity.ok(priorityService.add(priority));
+
+        //вызываем микросервис из другого модуля
+        // если пользователь существует, то создаем запись
+        if(userRestBuilder.userExists(priority.getUserId())) {
+            return ResponseEntity.ok(priorityService.add(priority));
+        }
+        // пользователя не существует => ошибка
+        return new ResponseEntity("user id = " + priority.getUserId() + " not found", HttpStatus.NOT_ACCEPTABLE);
     }
 
     @PutMapping("/update")
