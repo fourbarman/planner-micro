@@ -8,6 +8,7 @@ import ru.fourbarman.planner.micro.plannerentity.entity.Category;
 import ru.fourbarman.planner.micro.plannertodo.resttemplate.UserRestBuilder;
 import ru.fourbarman.planner.micro.plannertodo.search.CategorySearchValues;
 import ru.fourbarman.planner.micro.plannertodo.service.CategoryService;
+import ru.fourbarman.planner.micro.plannertodo.webclient.UserWebClientBuilder;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -28,11 +29,13 @@ public class CategoryController {
     // доступ к данным из БД
     private final CategoryService categoryService;
     private final UserRestBuilder userRestBuilder;
+    private final UserWebClientBuilder userWebClientBuilder;
 
     // автоматическое внедрение экземпляра класса через конструктор
     // не используем @Autowired ля переменной класса, т.к. "Field injection is not recommended "
-    public CategoryController(CategoryService categoryService) {
+    public CategoryController(CategoryService categoryService, UserWebClientBuilder userWebClientBuilder) {
         this.categoryService = categoryService;
+        this.userWebClientBuilder = userWebClientBuilder;
         this.userRestBuilder = new UserRestBuilder();
     }
 
@@ -71,7 +74,11 @@ public class CategoryController {
         }
         //вызываем микросервис из другого модуля
         // если пользователь существует, то создаем запись
-        if(userRestBuilder.userExists(category.getUserId())) {
+//        if(userRestBuilder.userExists(category.getUserId())) {
+//            return ResponseEntity.ok(categoryService.add(category));
+//        }
+
+        if(userWebClientBuilder.userExists(category.getUserId())) {
             return ResponseEntity.ok(categoryService.add(category));
         }
         // пользователя не существует => ошибка
