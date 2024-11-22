@@ -2,6 +2,7 @@ package ru.fourbarman.planner.micro.plannertodo.webclient;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import ru.fourbarman.planner.micro.plannerentity.entity.User;
 
 @Component
@@ -27,5 +28,17 @@ public class UserWebClientBuilder {
             e.printStackTrace();
         }
         return false;
+    }
+
+    // не блокирует поток
+    public Flux<User> userExistsAsync(Long userId) {
+
+        Flux<User> userFlux = WebClient.create(BASE_URL)
+                .post()
+                .uri("id")
+                .bodyValue(userId)
+                .retrieve()
+                .bodyToFlux(User.class);
+        return userFlux;
     }
 }

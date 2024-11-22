@@ -74,13 +74,23 @@ public class CategoryController {
         }
         //вызываем микросервис из другого модуля
         // если пользователь существует, то создаем запись
+
+        // используем синхронный RestClient
+
 //        if(userRestBuilder.userExists(category.getUserId())) {
 //            return ResponseEntity.ok(categoryService.add(category));
 //        }
 
-        if(userWebClientBuilder.userExists(category.getUserId())) {
-            return ResponseEntity.ok(categoryService.add(category));
-        }
+        // используем синхронный WebClient
+
+//        if(userWebClientBuilder.userExists(category.getUserId())) {
+//            return ResponseEntity.ok(categoryService.add(category));
+//        }
+
+        // используем асинхронный WebClient => Результат не будет ожилаться и выполнение продолжится!
+        userWebClientBuilder.userExistsAsync(category.getUserId())
+                .subscribe(user -> System.out.println("user = " + user));
+
         // пользователя не существует => ошибка
         return new ResponseEntity("user id = " + category.getUserId() + " not found", HttpStatus.NOT_ACCEPTABLE);
     }
