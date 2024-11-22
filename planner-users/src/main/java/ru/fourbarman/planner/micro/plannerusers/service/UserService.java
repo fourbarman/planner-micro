@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.fourbarman.planner.micro.plannerentity.entity.User;
 import ru.fourbarman.planner.micro.plannerusers.repository.UserRepository;
 
+import java.util.Optional;
+
 @Service
 @Transactional
 public class UserService {
@@ -18,8 +20,8 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public User findById(long id) {
-        return userRepository.findById(id).get();
+    public Optional<User> findById(long id) {
+        return userRepository.findById(id);
     }
 
     public User findByEmail(String email) {

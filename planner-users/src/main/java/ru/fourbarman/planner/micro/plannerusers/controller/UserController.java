@@ -13,6 +13,7 @@ import ru.fourbarman.planner.micro.plannerusers.search.UserSearchValues;
 import ru.fourbarman.planner.micro.plannerusers.service.UserService;
 
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @RequestMapping("/user")
 @RestController
@@ -85,16 +86,17 @@ public class UserController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    @PostMapping("/id")
+    @PostMapping(value = "/id", consumes = "application/json", produces = "application/json")
     public ResponseEntity<User> findById(@RequestBody Long userId) {
-        User user = null;
+        Optional<User> userOptional = userService.findById(userId);
         try{
-            user = userService.findById(userId);
+            if (userOptional.isPresent()) {
+                return ResponseEntity.ok(userOptional.get());
+            }
         } catch (NoSuchElementException e) {
             e.printStackTrace();
-            return new ResponseEntity("User with id = " + userId + " not found", HttpStatus.NOT_ACCEPTABLE);
         }
-        return ResponseEntity.ok(user);
+        return new ResponseEntity("User with id = " + userId + " not found", HttpStatus.NOT_ACCEPTABLE);
     }
 
     @PostMapping("/email")

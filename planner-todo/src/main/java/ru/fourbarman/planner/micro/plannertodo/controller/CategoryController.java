@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.fourbarman.planner.micro.plannerentity.entity.Category;
+import ru.fourbarman.planner.micro.plannertodo.resttemplate.UserRestBuilder;
 import ru.fourbarman.planner.micro.plannertodo.search.CategorySearchValues;
 import ru.fourbarman.planner.micro.plannertodo.service.CategoryService;
 
@@ -25,12 +26,14 @@ import java.util.NoSuchElementException;
 public class CategoryController {
 
     // доступ к данным из БД
-    private CategoryService categoryService;
+    private final CategoryService categoryService;
+    private final UserRestBuilder userRestBuilder;
 
     // автоматическое внедрение экземпляра класса через конструктор
     // не используем @Autowired ля переменной класса, т.к. "Field injection is not recommended "
     public CategoryController(CategoryService categoryService) {
         this.categoryService = categoryService;
+        this.userRestBuilder = new UserRestBuilder();
     }
 
     //можно без try-catch, тогда будет созвращаться полная ошибка (stacktrace)
@@ -54,7 +57,7 @@ public class CategoryController {
         return categoryService.findAll(userId);
     }
 
-    @PostMapping("/add")
+    @PostMapping(value = "/add", consumes = "application/json", produces = "application/json")
     public ResponseEntity<Category> add(@RequestBody Category category) {
         //проверяем на наличие id у категории
         if (category.getId() != null && category.getId() != 0) {
@@ -66,8 +69,13 @@ public class CategoryController {
         if (category.getTitle() == null || category.getTitle().trim().isEmpty()) {
             return new ResponseEntity("Missed param: title must be not null", HttpStatus.NOT_ACCEPTABLE);
         }
-
-        return ResponseEntity.ok(categoryService.add(category));
+        //вызываем микросервис из другого модуля
+        // если пользователь существует, то создаем Category
+        if(userRestBuilder.userExists(category.getUserId())) {
+            return ResponseEntity.ok(categoryService.add(category));
+        }
+        // пользователя не существует => ошибка
+        return new ResponseEntity("user id = " + category.getUserId() + " not found", HttpStatus.NOT_ACCEPTABLE);
     }
 
     @PutMapping("/update")
