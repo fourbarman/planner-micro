@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.fourbarman.planner.micro.plannerentity.entity.User;
+import ru.fourbarman.planner.micro.plannerusers.mq.MessageProducer;
 import ru.fourbarman.planner.micro.plannerusers.search.UserSearchValues;
 import ru.fourbarman.planner.micro.plannerusers.service.UserService;
 import ru.fourbarman.planner.micro.plannerusers.webclient.UserWebClientBuilder;
@@ -21,11 +22,11 @@ import java.util.Optional;
 public class UserController {
     private static final String ID_COLUMN = "id";
     private final UserService userService;
-    private final UserWebClientBuilder userWebClientBuilder;
+    private final MessageProducer messageProducer;
 
-    public UserController(UserService userService, UserWebClientBuilder userWebClientBuilder) {
+    public UserController(UserService userService, MessageProducer messageProducer) {
         this.userService = userService;
-        this.userWebClientBuilder = userWebClientBuilder;
+        this.messageProducer = messageProducer;
     }
 
     @PostMapping("/add")
@@ -46,11 +47,12 @@ public class UserController {
             return new ResponseEntity("Missing param: username", HttpStatus.NOT_ACCEPTABLE);
         }
 
+        //добавить пользователя в БД
         user = userService.add(user);
 
-        // асинхронно вызываем сервис для заполнения тестовыми данными
+        // проверить что User существует и отправить сообщение с id через mq
         if (user != null) {
-            userWebClientBuilder.initUserData(user.getId()).subscribe(result -> System.out.println("user populated: " + result));
+            messageProducer.newUserAction(user.getId());
         }
 
         return ResponseEntity.ok(user);
