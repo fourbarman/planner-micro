@@ -8,7 +8,7 @@ import org.springframework.messaging.MessageChannel;
  */
 public interface TodoBinding {
     //имя канала
-    String INPUT_CHANNEL = "todo_output_channel";
+    String INPUT_CHANNEL = "todoInputChannel";
 
     // канал для входящих сообщений (@Input)
     @Input(INPUT_CHANNEL)

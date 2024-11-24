@@ -10,7 +10,7 @@ import org.springframework.messaging.MessageChannel;
 
 public interface TodoBinding {
 
-    String OUTPUT_CHANNEL = "todo_output_channel";//нужен, чтобы на него ссылаться
+    String OUTPUT_CHANNEL = "todoOutputChannel";//нужен, чтобы на него ссылаться
 
     //создает канал для отправки сообщений (@Output)
     @Output(OUTPUT_CHANNEL)
