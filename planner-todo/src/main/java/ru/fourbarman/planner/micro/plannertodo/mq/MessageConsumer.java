@@ -16,7 +16,8 @@ public class MessageConsumer {
     }
 
     @StreamListener(target = TodoBinding.INPUT_CHANNEL) //считываем любое сообщение через этот канал
-    public void initTestData(Long userId) {
-        testDataService.initTestData(userId);
+    public void initTestData(Long userId) throws Exception {
+        throw new Exception("test dead letter queue");
+        //testDataService.initTestData(userId);
     }
 }
