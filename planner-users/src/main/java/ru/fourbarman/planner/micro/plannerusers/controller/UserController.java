@@ -9,10 +9,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.fourbarman.planner.micro.plannerentity.entity.User;
-import ru.fourbarman.planner.micro.plannerusers.mq.MessageProducer;
+import ru.fourbarman.planner.micro.plannerusers.mq.func.MessageFuncActions;
+import ru.fourbarman.planner.micro.plannerusers.mq.legacy.MessageProducer;
 import ru.fourbarman.planner.micro.plannerusers.search.UserSearchValues;
 import ru.fourbarman.planner.micro.plannerusers.service.UserService;
-import ru.fourbarman.planner.micro.plannerusers.webclient.UserWebClientBuilder;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -23,10 +23,12 @@ public class UserController {
     private static final String ID_COLUMN = "id";
     private final UserService userService;
     private final MessageProducer messageProducer;
+    private final MessageFuncActions messageFuncActions;
 
-    public UserController(UserService userService, MessageProducer messageProducer) {
+    public UserController(UserService userService, MessageProducer messageProducer, MessageFuncActions messageFuncActions) {
         this.userService = userService;
         this.messageProducer = messageProducer;
+        this.messageFuncActions = messageFuncActions;
     }
 
     @PostMapping("/add")
@@ -50,10 +52,13 @@ public class UserController {
         //добавить пользователя в БД
         user = userService.add(user);
 
-        // проверить что User существует и отправить сообщение с id через mq
-        if (user != null) {
-            messageProducer.newUserAction(user.getId());
-        }
+//        // проверить что User существует и отправить сообщение с id через mq: 1 вариант legacy
+//        if (user != null) {
+//            messageProducer.newUserAction(user.getId());
+//        }
+
+        //отправляем сообщение с помощью функц. кода
+        messageFuncActions.sendNewUserMessage(user.getId());
 
         return ResponseEntity.ok(user);
     }
