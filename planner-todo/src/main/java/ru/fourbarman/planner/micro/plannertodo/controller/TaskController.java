@@ -109,9 +109,9 @@ public class TaskController {
         Long userId = taskSearchValues.getUserId() != null ? taskSearchValues.getUserId() : null;
 
         //проверить на обязательные поля
-        if (userId == null || userId == 0) {
-            return new ResponseEntity("Missed param: userId", HttpStatus.NOT_ACCEPTABLE);
-        }
+//        if (userId == null || userId == 0) {
+//            return new ResponseEntity("Missed param: userId", HttpStatus.NOT_ACCEPTABLE);
+//        }
 
         //чтобы захватить в выборке все задачи по датам, независимо от времени
         Date dateFrom = null;
