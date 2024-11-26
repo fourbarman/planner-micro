@@ -22,7 +22,7 @@ public class SpringSecurityConfig {
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new KCRoleConverter());
 
         http.authorizeRequests()
-                .antMatchers("/login").permitAll()
+                .antMatchers("/category/*", "/priority/*", "/task/*").hasRole("user")
                 .anyRequest().authenticated()
                 .and()
                 .oauth2ResourceServer()//добавляем конвертер ролей из Jwt в Authority
