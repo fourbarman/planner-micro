@@ -11,20 +11,20 @@ import java.util.function.Consumer;
 /*
 Получатель сообщения
  */
-@Configuration
-public class MessageFunc {
-    private final TestDataService testDataService;
-
-    public MessageFunc(TestDataService testDataService) {
-        this.testDataService = testDataService;
-    }
-
-    // получает id пользователя и запускает создание тестовых данных
-    // название метода д-но совпадать с настройками definition и binding в properties
-    @Bean
-    public Consumer<Message<Long>> newUserActionConsume() {
-        return message -> {
-            testDataService.initTestData(message.getPayload());
-        };
-    }
-}
+//@Configuration
+//public class MessageFunc {
+//    private final TestDataService testDataService;
+//
+//    public MessageFunc(TestDataService testDataService) {
+//        this.testDataService = testDataService;
+//    }
+//
+//    // получает id пользователя и запускает создание тестовых данных
+//    // название метода д-но совпадать с настройками definition и binding в properties
+//    @Bean
+//    public Consumer<Message<Long>> newUserActionConsume() {
+//        return message -> {
+//            testDataService.initTestData(message.getPayload());
+//        };
+//    }
+//}

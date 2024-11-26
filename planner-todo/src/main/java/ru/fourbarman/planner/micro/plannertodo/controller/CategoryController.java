@@ -3,14 +3,12 @@ package ru.fourbarman.planner.micro.plannertodo.controller;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import ru.fourbarman.planner.micro.plannerentity.entity.Category;
-import ru.fourbarman.planner.micro.plannerentity.entity.User;
-import ru.fourbarman.planner.micro.plannertodo.feign.UserFeignClient;
-import ru.fourbarman.planner.micro.plannertodo.resttemplate.UserRestBuilder;
 import ru.fourbarman.planner.micro.plannertodo.search.CategorySearchValues;
 import ru.fourbarman.planner.micro.plannertodo.service.CategoryService;
-import ru.fourbarman.planner.micro.plannertodo.webclient.UserWebClientBuilder;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -30,17 +28,11 @@ public class CategoryController {
 
     // доступ к данным из БД
     private final CategoryService categoryService;
-    private final UserRestBuilder userRestBuilder;
-    private final UserWebClientBuilder userWebClientBuilder;
-    private final UserFeignClient userFeignClient;
 
     // автоматическое внедрение экземпляра класса через конструктор
     // не используем @Autowired ля переменной класса, т.к. "Field injection is not recommended "
-    public CategoryController(CategoryService categoryService, UserWebClientBuilder userWebClientBuilder, UserFeignClient userFeignClient) {
+    public CategoryController(CategoryService categoryService) {
         this.categoryService = categoryService;
-        this.userWebClientBuilder = userWebClientBuilder;
-        this.userFeignClient = userFeignClient;
-        this.userRestBuilder = new UserRestBuilder();
     }
 
     //можно без try-catch, тогда будет созвращаться полная ошибка (stacktrace)
@@ -60,16 +52,22 @@ public class CategoryController {
     }
     //этот метод дублирует search(@RequestBody CategorySearchValues categorySearchValues)
     @PostMapping("/all")
-    public List<Category> findAll(@RequestBody Long userId) {
+    public List<Category> findAll(@RequestBody String userId) {
         return categoryService.findAll(userId);
     }
 
+
     @PostMapping(value = "/add", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<Category> add(@RequestBody Category category) {
+    public ResponseEntity<Category> add(@RequestBody Category category, @AuthenticationPrincipal Jwt jwt) {
+
+        //получить subject из jwt - uuid пользователя из keycloak
+        category.setUserId(jwt.getSubject());
+
+
         //проверяем на наличие id у категории
         if (category.getId() != null && category.getId() != 0) {
             //не нужно передавать id, т.к. id создается в БД
-            return new ResponseEntity("Redundant param: id must be null", HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity("Redundant param: category id must be null", HttpStatus.NOT_ACCEPTABLE);
         }
 
         //если передаем пустой title, то ошибка
@@ -96,17 +94,21 @@ public class CategoryController {
 //                .subscribe(user -> System.out.println("user = " + user));
 
         //используем feign для проверки что User существует в другом микросервисе (planner-user)
-        ResponseEntity<User> response = userFeignClient.findUserById(category.getUserId());
+//        ResponseEntity<User> response = userFeignClient.findUserById(category.getUserId());
+//
+//        if (response == null) {
+//            return new ResponseEntity("User service not available", HttpStatus.NOT_FOUND);
+//        }
+//
+//        if (userFeignClient.findUserById(category.getUserId()) != null) {
+//            return ResponseEntity.ok(categoryService.add(category));
+//        }
 
-        if (response == null) {
-            return new ResponseEntity("User service not available", HttpStatus.NOT_FOUND);
-        }
-
-        if (userFeignClient.findUserById(category.getUserId()) != null) {
+        // если UUID есть, то записываем в БД
+        if (!category.getUserId().isBlank()) {
             return ResponseEntity.ok(categoryService.add(category));
         }
-
-        // пользователя не существует => ошибка
+        //если нет, то ошибка
         return new ResponseEntity("user id = " + category.getUserId() + " not found", HttpStatus.NOT_ACCEPTABLE);
     }
 
@@ -141,11 +143,14 @@ public class CategoryController {
     }
 
     @PostMapping("/search")
-    public ResponseEntity<List<Category>> search(@RequestBody CategorySearchValues categorySearchValues) {
+    public ResponseEntity<List<Category>> search(@RequestBody CategorySearchValues categorySearchValues,
+                                                 @AuthenticationPrincipal Jwt jwt) {
+
+        categorySearchValues.setUserId(jwt.getSubject());
 
         // 1. если title == null, то получим все категории пользователя по его email
         // 2. если email == null, вернуть ошибку
-        if (categorySearchValues.getUserId() == null || categorySearchValues.getUserId() == 0) {
+        if (categorySearchValues.getUserId().isBlank()) {
             return new ResponseEntity("Missed param: email", HttpStatus.NOT_ACCEPTABLE);
         }
 

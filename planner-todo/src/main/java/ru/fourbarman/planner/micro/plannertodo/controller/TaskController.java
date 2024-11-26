@@ -7,6 +7,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.expression.ParseException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import ru.fourbarman.planner.micro.plannerentity.entity.Task;
 import ru.fourbarman.planner.micro.plannertodo.resttemplate.UserRestBuilder;
@@ -22,20 +24,21 @@ import java.util.List;
 public class TaskController {
     public static final String ID_COLUMN = "id";
     private final TaskService taskService;
-    private final UserRestBuilder userRestBuilder;
 
-    public TaskController(TaskService taskService, UserRestBuilder userRestBuilder) {
+    public TaskController(TaskService taskService) {
         this.taskService = taskService;
-        this.userRestBuilder = userRestBuilder;
     }
 
     @PostMapping("/all")
-    public ResponseEntity<List<Task>> findAll(@RequestBody Long userId) {
+    public ResponseEntity<List<Task>> findAll(@RequestBody String userId) {
         return ResponseEntity.ok(taskService.findAll(userId));
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Task> add(@RequestBody Task task) {
+    public ResponseEntity<Task> add(@RequestBody Task task, @AuthenticationPrincipal Jwt jwt) {
+
+        task.setUserId(jwt.getSubject());
+
         if (task.getId() != null && task.getId() != 0) {
             return new ResponseEntity("Redundant param: id must be null", HttpStatus.NOT_ACCEPTABLE);
         }
@@ -46,9 +49,13 @@ public class TaskController {
 
         //вызываем микросервис из другого модуля
         // если пользователь существует, то создаем запись
-        if(userRestBuilder.userExists(task.getUserId())) {
+//        if(userRestBuilder.userExists(task.getUserId())) {
+//            return ResponseEntity.ok(taskService.add(task));
+//        }
+        if(!task.getUserId().isBlank()) {
             return ResponseEntity.ok(taskService.add(task));
         }
+
         // пользователя не существует => ошибка
         return new ResponseEntity("user id = " + task.getUserId() + " not found", HttpStatus.NOT_ACCEPTABLE);
     }
@@ -93,7 +100,11 @@ public class TaskController {
     // 1. получаем значения из TaskSearchValues: если значение пустое, то вернем null. иначе берем значение
     // 2.
     @PostMapping("/search")
-    public ResponseEntity<Page<Task>> search(@RequestBody TaskSearchValues taskSearchValues) throws ParseException {
+    public ResponseEntity<Page<Task>> search(@RequestBody TaskSearchValues taskSearchValues,
+                                             @AuthenticationPrincipal Jwt jwt) throws ParseException {
+
+        taskSearchValues.setUserId(jwt.getSubject());
+
         //исключаем Null
         String title = taskSearchValues.getTitle() != null ? taskSearchValues.getTitle() : null;
         //конвертировать boolean в Integer
@@ -106,7 +117,7 @@ public class TaskController {
         Integer pageSize = taskSearchValues.getPageSize() != null ? taskSearchValues.getPageSize() : null;
 
         //для того, чтобы показать задачи только текущего пользователя
-        Long userId = taskSearchValues.getUserId() != null ? taskSearchValues.getUserId() : null;
+        String userId = taskSearchValues.getUserId() != null ? taskSearchValues.getUserId() : null;
 
         //проверить на обязательные поля
 //        if (userId == null || userId == 0) {

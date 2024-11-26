@@ -19,7 +19,7 @@ public class TaskService {
         this.taskRepository = taskRepository;
     }
 
-    public List<Task> findAll(Long userId) {
+    public List<Task> findAll(String userId) {
         return taskRepository.findByUserIdOrderByTitleAsc(userId);
     }
 
@@ -35,7 +35,7 @@ public class TaskService {
                                    Boolean completed,
                                    Long priorityId,
                                    Long categoryId,
-                                   Long userId,
+                                   String userId,
                                    Date dateFrom,
                                    Date dateTo,
                                    PageRequest paging) {

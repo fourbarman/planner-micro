@@ -47,7 +47,7 @@ public class Category {
 //    private User user;
 
     @Column(name = "user_id")
-    private Long userId;
+    private String userId;
 
 
     @Override

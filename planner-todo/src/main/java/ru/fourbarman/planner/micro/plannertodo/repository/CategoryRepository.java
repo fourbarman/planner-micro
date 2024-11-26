@@ -12,7 +12,7 @@ import java.util.List;
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     // поиск категорий пользователя (по названию) по его email
-    List<Category> findByUserIdOrderByTitleAsc(Long id);
+    List<Category> findByUserIdOrderByTitleAsc(String id);
 
     //поиск значений по названию для конкретного пользователя
     @Query("""
@@ -22,5 +22,5 @@ or lower(c.title) like lower(concat('%', :title, '%')))\s
 and c.userId=:id\s
 order by c.title asc
 """)
-    List<Category> findByTitle(@Param("title") String title, @Param("id") Long id);
+    List<Category> findByTitle(@Param("title") String title, @Param("id") String id);
 }

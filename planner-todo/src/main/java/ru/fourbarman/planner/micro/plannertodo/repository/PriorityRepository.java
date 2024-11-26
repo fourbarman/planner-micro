@@ -18,7 +18,7 @@ or lower(p.title) like lower(concat('%', :title, '%')))\s
 AND p.userId=:id\s
 ORDER BY p.title ASC
 """)
-    List<Priority> findByTitle(@Param("title") String title, @Param("id") Long id);
+    List<Priority> findByTitle(@Param("title") String title, @Param("id") String id);
 
-    List<Priority> findByUserIdOrderByIdAsc(Long id);
+    List<Priority> findByUserIdOrderByIdAsc(String id);
 }

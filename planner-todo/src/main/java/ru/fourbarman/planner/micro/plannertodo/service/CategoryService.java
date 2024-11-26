@@ -32,7 +32,7 @@ public class CategoryService {
         return repository.findById(id).get();
     }
 
-    public List<Category> findAll(Long userId) {
+    public List<Category> findAll(String userId) {
         return repository.findByUserIdOrderByTitleAsc(userId);
     }
 
@@ -49,7 +49,7 @@ public class CategoryService {
         repository.deleteById(id);
     }
 
-    public List<Category> findByTitle(String title, Long userId) {
+    public List<Category> findByTitle(String title, String userId) {
         return repository.findByTitle(title, userId);
     }
 }

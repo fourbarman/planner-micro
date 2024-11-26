@@ -3,6 +3,8 @@ package ru.fourbarman.planner.micro.plannertodo.controller;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import ru.fourbarman.planner.micro.plannerentity.entity.Priority;
 import ru.fourbarman.planner.micro.plannertodo.resttemplate.UserRestBuilder;
@@ -24,15 +26,18 @@ public class PriorityController {
     }
 
     @PostMapping("/all")
-    public List<Priority> findAll(@RequestBody Long userId) {
+    public List<Priority> findAll(@RequestBody String userId) {
         return priorityService.findAll(userId);
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Priority> add(@RequestBody Priority priority) {
+    public ResponseEntity<Priority> add(@RequestBody Priority priority, @AuthenticationPrincipal Jwt jwt) {
+
+        priority.setUserId(jwt.getSubject());
+
         //id создфется автоматически в БД
         if (priority.getId() != null && priority.getId() != 0) {
-            return new ResponseEntity("Redundunt param: id must be null", HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity("Redundunt param: priority id must be null", HttpStatus.NOT_ACCEPTABLE);
         }
         //если передали пустое значение title
         if (priority.getTitle() == null || priority.getTitle().trim().isEmpty()) {
@@ -45,7 +50,11 @@ public class PriorityController {
 
         //вызываем микросервис из другого модуля
         // если пользователь существует, то создаем запись
-        if(userRestBuilder.userExists(priority.getUserId())) {
+//        if(userRestBuilder.userExists(priority.getUserId())) {
+//            return ResponseEntity.ok(priorityService.add(priority));
+//        }
+
+        if (!priority.getUserId().isBlank()) {
             return ResponseEntity.ok(priorityService.add(priority));
         }
         // пользователя не существует => ошибка
@@ -95,8 +104,12 @@ public class PriorityController {
     }
 
     @PostMapping("/search")
-    public ResponseEntity<List<Priority>> search(@RequestBody PrioritySearchValues prioritySearchValues) {
-        if (prioritySearchValues.getUserId() == null || prioritySearchValues.getUserId() == 0) {
+    public ResponseEntity<List<Priority>> search(@RequestBody PrioritySearchValues prioritySearchValues,
+                                                 @AuthenticationPrincipal Jwt jwt) {
+
+        prioritySearchValues.setUserId(jwt.getSubject());
+
+        if (prioritySearchValues.getUserId().isBlank()) {
             return new ResponseEntity("Missed param: userId", HttpStatus.NOT_ACCEPTABLE);
         }
         return ResponseEntity.ok(priorityService.find(prioritySearchValues.getTitle(), prioritySearchValues.getUserId()));
