@@ -4,8 +4,10 @@ import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -14,7 +16,9 @@ import jakarta.ws.rs.core.Response;
 import ru.fourbarman.planner.micro.plannerusers.dto.UserDTO;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 @Service
 public class KeycloakUtil {
@@ -84,5 +88,24 @@ public class KeycloakUtil {
         credentialRepresentation.setTemporary(false);
         credentialRepresentation.setValue(password);
         return credentialRepresentation;
+    }
+
+    // добвление роли пользователю
+    public void addRoles(String userId, List<String> roles) {
+
+        // список доступных ролей в realm
+        List<RoleRepresentation> kcRoles = new ArrayList<>();
+
+        // преобразование текста в спец объекты RoleRepresentation, который использует keycloak
+        for (String role : roles) {
+            RoleRepresentation roleRep = realmResource.roles().get(role).toRepresentation();
+            kcRoles.add(roleRep);
+        }
+
+        // получаем конкретного пользователя
+        UserResource uniqueUserResource = usersResource.get(userId);
+
+        // добавляем ему проли на уровен realm
+        uniqueUserResource.roles().realmLevel().add(kcRoles);
     }
 }

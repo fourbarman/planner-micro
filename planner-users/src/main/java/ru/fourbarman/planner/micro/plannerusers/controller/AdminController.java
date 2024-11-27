@@ -16,6 +16,8 @@ import ru.fourbarman.planner.micro.plannerusers.keycloak.KeycloakUtil;
 import ru.fourbarman.planner.micro.plannerusers.search.UserSearchValues;
 import ru.fourbarman.planner.micro.plannerusers.service.UserService;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -25,6 +27,7 @@ public class AdminController {
     private static final String ID_COLUMN = "id";
     private final UserService userService;
     private final KeycloakUtil keycloakUtil;
+    private static final String USER_ROLE_NAME = "user";
 
     public AdminController(UserService userService, KeycloakUtil keycloakUtil) {
         this.userService = userService;
@@ -49,16 +52,7 @@ public class AdminController {
             return new ResponseEntity("Missing param: username", HttpStatus.NOT_ACCEPTABLE);
         }
 
-//        //добавить пользователя в БД
-//        user = userService.add(user);
 
-//        // проверить что User существует и отправить сообщение с id через mq: 1 вариант legacy
-//        if (user != null) {
-//            messageProducer.newUserAction(user.getId());
-//        }
-
-        //отправляем сообщение с помощью функц. кода
-        //messageFuncActions.sendNewUserMessage(user.getId());
 
         Response response = keycloakUtil.createKeycloakUser(userDTO);
 
@@ -71,10 +65,15 @@ public class AdminController {
         String userId = CreatedResponseUtil.getCreatedId(response);
         System.out.println("User created with id: " + userId);
 
-        String responseBody = response.readEntity(String.class);
-        return ResponseEntity.status(response.getStatus()).body(responseBody);
+        // добавление роли при создании пользователя
+        //роль должна быть заведена в keycloak на уровне realm
+        List<String> defaultRoles = new ArrayList<>();
+        defaultRoles.add(USER_ROLE_NAME);
+        keycloakUtil.addRoles(userId, defaultRoles);
 
-        //return ResponseEntity.status(response.getStatus()).body(response);
+        String responseBody = response.readEntity(String.class);
+
+        return ResponseEntity.status(response.getStatus()).body(responseBody);
     }
 
     @PutMapping("/update")
