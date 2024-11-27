@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 import ru.fourbarman.planner.micro.plannerentity.entity.User;
 
 
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, String> {
     User findByEmail(String email);
 
     void deleteByEmail(String email);

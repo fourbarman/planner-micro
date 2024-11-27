@@ -59,12 +59,6 @@ public class KeycloakUtil {
     //создание пользователя для KC
     public Response createKeycloakUser(UserDTO user) {
 
-//        //доступ к API realm
-//        RealmResource realmResource = keycloak().realm(realm);
-//
-//        //доступ к API для работы с пользователями
-//        UsersResource usersResource = realmResource.users();
-
         // данные пароля - спец объект CredentialRepresentation
         CredentialRepresentation credentialRepresentation = createPasswordCredentials(user.getPassword());
 
@@ -107,5 +101,36 @@ public class KeycloakUtil {
 
         // добавляем ему проли на уровен realm
         uniqueUserResource.roles().realmLevel().add(kcRoles);
+    }
+
+    public void deleteKeycloakUser(String userId) {
+        UserResource uniqueUserResource = usersResource.get(userId);
+        uniqueUserResource.remove();
+    }
+
+    public UserRepresentation findUserById(String userId) {
+        UserResource uniqueUserResource = usersResource.get(userId);
+        return uniqueUserResource.toRepresentation();
+    }
+
+    public List<UserRepresentation> searchKeycloakUsers(String text) {
+        return usersResource.searchByAttributes(text);
+    }
+
+    public void updateKeycloakUser(UserDTO userDTO) {
+        // конвертируем пароль
+        CredentialRepresentation credentialRepresentation = createPasswordCredentials(userDTO.getPassword());
+        // обновляем поля
+        UserRepresentation kcUser = new UserRepresentation();
+        kcUser.setUsername(userDTO.getUsername());
+        kcUser.setEmail(userDTO.getEmail());
+        kcUser.setCredentials(Collections.singletonList(credentialRepresentation));
+        kcUser.setEmail(userDTO.getEmail());
+        //получаем пользователя
+        UserResource uniqueUserResource = usersResource.get(userDTO.getId());
+        System.out.println("Получили UserResource: " + uniqueUserResource.toRepresentation());
+        // обновляем
+        uniqueUserResource.update(kcUser);
+
     }
 }

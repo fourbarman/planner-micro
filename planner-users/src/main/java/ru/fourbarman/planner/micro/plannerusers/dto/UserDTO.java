@@ -12,7 +12,7 @@ import java.util.Objects;
 @NoArgsConstructor
 public class UserDTO {
 
-    private Long id;
+    private String id;
 
     private String email;
 
