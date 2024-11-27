@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import jakarta.ws.rs.core.Response;
 import ru.fourbarman.planner.micro.plannerusers.dto.UserDTO;
 
+import javax.annotation.PostConstruct;
 import java.util.Collections;
 
 @Service
@@ -27,8 +28,10 @@ public class KeycloakUtil {
     private String clientSecret;
 
     private static Keycloak keycloak; //единственный объект KC
+    private static UsersResource usersResource;
+    private static RealmResource realmResource;
 
-    //создаем объекс KC
+    @PostConstruct
     public Keycloak keycloak() {
         if (keycloak == null) {
 
@@ -41,17 +44,22 @@ public class KeycloakUtil {
                     .build();
 
         }
+
+        realmResource = keycloak.realm(realm);
+
+        usersResource = realmResource.users();
+
         return keycloak;
     }
 
     //создание пользователя для KC
     public Response createKeycloakUser(UserDTO user) {
 
-        //доступ к API realm
-        RealmResource realmResource = keycloak().realm(realm);
-
-        //доступ к API для работы с пользователями
-        UsersResource usersResource = realmResource.users();
+//        //доступ к API realm
+//        RealmResource realmResource = keycloak().realm(realm);
+//
+//        //доступ к API для работы с пользователями
+//        UsersResource usersResource = realmResource.users();
 
         // данные пароля - спец объект CredentialRepresentation
         CredentialRepresentation credentialRepresentation = createPasswordCredentials(user.getPassword());
@@ -63,7 +71,7 @@ public class KeycloakUtil {
         kcUser.setEmail(user.getEmail());
         kcUser.setCredentials(Collections.singletonList(credentialRepresentation));// коллекция из одного объекта
         kcUser.setEnabled(true);
-        kcUser.setEmailVerified(false);
+        kcUser.setEmailVerified(true);
         Response response = usersResource.create(kcUser);
 
         return response;
